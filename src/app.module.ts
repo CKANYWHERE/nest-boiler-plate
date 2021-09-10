@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './feature/user/user.module';
 import { User } from './feature/user/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './feature/auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -21,6 +22,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       keepConnectionAlive: true,
     }),
     UserModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

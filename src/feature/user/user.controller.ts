@@ -7,17 +7,27 @@ import {
   Param,
   Delete,
   Version,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
+import { LoginUserDto } from './dto/login-user.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('user')
 @ApiTags('유저 API')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Version('1')
+  @Post('/login')
+  @UseGuards(AuthGuard('local'))
+  login(@Body() loginDto: LoginUserDto) {
+    return '';
+  }
 
   @Version('1')
   @ApiOperation({ summary: '유저 생성 API', description: '유저를 생성한다.' })
@@ -34,8 +44,8 @@ export class UserController {
     description: '모든 유저를 리턴한다.',
   })
   @ApiCreatedResponse({ description: '모든 유저를 리턴한다.', type: [User] })
-  findAll() {
-    return this.userService.findAll();
+  async findAll() {
+    return await this.userService.findAll();
   }
 
   @Version('1')
@@ -45,8 +55,8 @@ export class UserController {
     description: '한명의 유저를 리턴한다.',
   })
   @ApiCreatedResponse({ description: '유저를 리턴한다.', type: User })
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    return await this.userService.findOne(id);
   }
 
   @Version('1')
@@ -56,8 +66,8 @@ export class UserController {
     description: '한명의 유저를 update 한다.',
   })
   @ApiCreatedResponse({ description: '한명의 유저를 update 한다.', type: User })
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(id, updateUserDto);
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return await this.userService.update(id, updateUserDto);
   }
 
   @Version('1')
@@ -67,7 +77,7 @@ export class UserController {
     description: '한명의 유저를 삭제 한다.',
   })
   @ApiCreatedResponse({ description: '한명의 유저를 삭제 한다.', type: User })
-  remove(@Param('id') id: string) {
-    return this.userService.remove(id);
+  async remove(@Param('id') id: string) {
+    return await this.userService.remove(id);
   }
 }
