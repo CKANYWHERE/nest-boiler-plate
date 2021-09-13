@@ -16,18 +16,12 @@ import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
 import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { AuthService } from '../auth/auth.service';
 
 @Controller('user')
 @ApiTags('유저 API')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @Version('1')
-  @Post('/login')
-  @UseGuards(AuthGuard('local'))
-  login(@Body() loginDto: LoginUserDto) {
-    return '';
-  }
 
   @Version('1')
   @ApiOperation({ summary: '유저 생성 API', description: '유저를 생성한다.' })

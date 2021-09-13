@@ -5,10 +5,10 @@ export class LoginUserDto {
   @IsEmail()
   @IsNotEmpty()
   @ApiProperty({ description: 'id' })
-  id: string;
+  email: string;
 
   @IsDefined()
   @IsNotEmpty()
   @ApiProperty({ description: '비밀번호' })
-  pw: string;
+  password: string;
 }
