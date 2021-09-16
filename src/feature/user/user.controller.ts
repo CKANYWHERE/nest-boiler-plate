@@ -17,6 +17,7 @@ import { User } from './entities/user.entity';
 import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '../auth/auth.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('user')
 @ApiTags('유저 API')
@@ -37,6 +38,7 @@ export class UserController {
     summary: '모든 유저 가져오는 API',
     description: '모든 유저를 리턴한다.',
   })
+  @UseGuards(JwtAuthGuard)
   @ApiCreatedResponse({ description: '모든 유저를 리턴한다.', type: [User] })
   async findAll() {
     return await this.userService.findAll();
