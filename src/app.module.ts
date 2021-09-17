@@ -6,6 +6,7 @@ import { UserModule } from './feature/user/user.module';
 import { User } from './feature/user/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './feature/auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
 @Module({
   imports: [
     ConfigModule.forRoot(),

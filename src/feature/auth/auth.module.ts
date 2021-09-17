@@ -13,11 +13,12 @@ import { JwtStrategy } from './jwt.strategy';
     TypeOrmModule.forFeature([UserRepo]),
     PassportModule,
     JwtModule.register({
-      secret: 'dev',
-      signOptions: { expiresIn: 10 },
+      secret: process.env.JWT_SECRET_KEY ? process.env.JWT_SECRET_KEY : 'dev',
+      signOptions: { expiresIn: 3600 },
     }),
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],
+  exports: [JwtModule],
 })
 export class AuthModule {}
