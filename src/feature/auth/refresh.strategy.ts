@@ -12,9 +12,9 @@ import { JwtService } from '@nestjs/jwt';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromBodyField('refresh_token'),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET_KEY,
+      secretOrKey: process.env.JWT_REFRESH_KEY,
     });
   }
 

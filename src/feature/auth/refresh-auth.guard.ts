@@ -8,7 +8,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('jwt') {
+export class RefreshAuthGuard extends AuthGuard('jwt-refresh-token') {
   constructor(private jwtService: JwtService) {
     super();
   }
@@ -16,19 +16,13 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
 
-    const { authorization } = request.headers;
-
-    if (authorization === undefined) {
-      throw new HttpException('TOKEN_NULL', HttpStatus.UNAUTHORIZED);
-    }
-
-    const token = authorization.replace('Bearer ', '');
-    request.user = this.validateToken(token);
+    const { refresh_token } = request.body;
+    request.user = this.validateToken(refresh_token);
     return true;
   }
 
   validateToken(token: string) {
-    const secretKey = process.env.JWT_SECRET_KEY;
+    const secretKey = process.env.JWT_REFRESH_KEY;
 
     try {
       const verify = this.jwtService.verify(token, { secret: secretKey });

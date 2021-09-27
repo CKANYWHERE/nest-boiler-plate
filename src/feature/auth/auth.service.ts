@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepo } from '../user/user.repo';
 import { Repository } from 'typeorm';
 import { LoginUserDto } from '../user/dto/login-user.dto';
+import { RefreshDto } from './dto/refresh.dto';
 
 @Injectable()
 export class AuthService {
@@ -23,8 +24,26 @@ export class AuthService {
     return user; // select * from user where id = user.id;
   }
 
+  async refreshToken(refresh: RefreshDto) {
+    return {
+      access_token: this.jwtService.sign(refresh, {
+        secret: process.env.JWT_SECRET_KEY,
+        expiresIn: 3600,
+      }),
+    };
+  }
+
   async login(user: LoginUserDto) {
     const payload = { username: user.email };
-    return { access_token: this.jwtService.sign(payload) };
+    return {
+      access_token: this.jwtService.sign(payload, {
+        secret: process.env.JWT_SECRET_KEY,
+        expiresIn: 3600,
+      }),
+      refresh_token: this.jwtService.sign(payload, {
+        secret: process.env.JWT_REFRESH_KEY,
+        expiresIn: 864000,
+      }),
+    };
   }
 }
