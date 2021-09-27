@@ -1,12 +1,11 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './feature/user/user.module';
 import { User } from './feature/user/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './feature/auth/auth.module';
-import { JwtModule } from '@nestjs/jwt';
+import * as redisStore from 'cache-manager-ioredis';
+
 @Module({
   imports: [
     ConfigModule.forRoot(),
