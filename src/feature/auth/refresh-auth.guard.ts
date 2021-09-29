@@ -3,21 +3,41 @@ import {
   ExecutionContext,
   HttpException,
   HttpStatus,
+  Inject,
+  CACHE_MANAGER,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
+import { Cache } from 'cache-manager';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class RefreshAuthGuard extends AuthGuard('jwt-refresh-token') {
-  constructor(private jwtService: JwtService) {
+  constructor(
+    private jwtService: JwtService,
+    @Inject(CACHE_MANAGER) private redisManager: Cache,
+  ) {
     super();
   }
 
-  canActivate(context: ExecutionContext) {
+  async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
-
-    const { refresh_token } = request.body;
-    request.user = this.validateToken(refresh_token);
+    if (!request.cookies._u_session || !request.cookies._trx_id) {
+      throw new HttpException('SESSION_NULL', 401);
+    }
+    const { _u_session } = request.cookies;
+    const data = (await this.redisManager.get(`auth:${_u_session}`)) as any;
+    if (request.cookies._trx_id !== data.uuid) {
+      throw new HttpException('INVALID_SESSION', 401);
+    }
+    delete data.uuid;
+    const uuid = uuidv4();
+    const newSession = { ...data, uuid: uuid };
+    await this.redisManager.set(`auth:${_u_session}`, newSession, {
+      ttl: 0,
+    });
+    request.body.trx_id = uuid;
+    request.user = this.validateToken(data.refresh);
     return true;
   }
 

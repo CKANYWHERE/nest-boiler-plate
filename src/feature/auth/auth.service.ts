@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 import { LoginUserDto } from '../user/dto/login-user.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { Cache } from 'cache-manager';
-import { v4 as uuid } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -27,32 +27,43 @@ export class AuthService {
     return user; // select * from user where id = user.id;
   }
 
-  async refreshToken(refresh: RefreshDto) {
+  async refreshToken(email: string) {
     return {
-      access_token: this.jwtService.sign(refresh, {
-        secret: process.env.JWT_SECRET_KEY,
-        expiresIn: 3600,
-      }),
+      access_token: this.jwtService.sign(
+        { username: email },
+        {
+          secret: process.env.JWT_SECRET_KEY,
+          expiresIn: 3600,
+        },
+      ),
     };
   }
 
   async login(user: LoginUserDto) {
     const payload = { username: user.email };
-    const transactionId = uuid();
+    const uuid = uuidv4();
     const refreshToken = this.jwtService.sign(
-      { ...payload, x_transaction_id: transactionId },
+      { payload },
       {
         secret: process.env.JWT_REFRESH_KEY,
-        expiresIn: 864000,
+        expiresIn: 2592000,
       },
     );
-
+    await this.redisManager.set(
+      `auth:${user.email}`,
+      { email: user.email, uuid: uuid, refresh: refreshToken },
+      {
+        ttl: 0,
+      },
+    );
     return {
       access_token: this.jwtService.sign(payload, {
         secret: process.env.JWT_SECRET_KEY,
         expiresIn: 3600,
       }),
       refresh_token: refreshToken,
+      uuid: uuid,
+      email: user.email,
     };
   }
 }

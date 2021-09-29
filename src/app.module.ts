@@ -4,7 +4,8 @@ import { UserModule } from './feature/user/user.module';
 import { User } from './feature/user/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './feature/auth/auth.module';
-import * as redisStore from 'cache-manager-ioredis';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -24,5 +25,7 @@ import * as redisStore from 'cache-manager-ioredis';
     UserModule,
     AuthModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

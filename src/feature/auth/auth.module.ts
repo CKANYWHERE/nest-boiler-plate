@@ -8,6 +8,7 @@ import { UserRepo } from '../user/user.repo';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import * as redisStore from 'cache-manager-ioredis';
+import { DateModule } from '../../commcon/date/date.module';
 
 @Module({
   imports: [
@@ -20,8 +21,9 @@ import * as redisStore from 'cache-manager-ioredis';
     CacheModule.register({
       store: redisStore,
       host: process.env.REDIS_HOST,
-      port: Number(process.env.REDIS_PORT),
+      port: process.env.REDIS_PORT,
     }),
+    DateModule,
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],
