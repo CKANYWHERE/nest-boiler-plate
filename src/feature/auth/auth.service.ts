@@ -1,13 +1,15 @@
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
-import { UserService } from '../user/user.service';
-import { compare } from 'bcrypt';
+import {
+  CACHE_MANAGER,
+  HttpException,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { User } from '../user/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepo } from '../user/user.repo';
 import { Repository } from 'typeorm';
 import { LoginUserDto } from '../user/dto/login-user.dto';
-import { RefreshDto } from './dto/refresh.dto';
 import { Cache } from 'cache-manager';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -18,6 +20,46 @@ export class AuthService {
     @InjectRepository(UserRepo) private usersRepository: Repository<User>,
     private jwtService: JwtService,
   ) {}
+
+  async autoLogin(email: string, refreshToken: string) {
+    if (!email || !refreshToken) {
+      throw new HttpException('TOKEN_NULL', 401);
+    }
+    const data = (await this.redisManager.get(`auth:${email}`)) as any;
+    if (!data) {
+      throw new HttpException('CANNOT_FIND_SESSION', 401);
+    }
+    if (data.refresh !== refreshToken || data.email !== email) {
+      throw new HttpException('INVALID_AUTHORIZATION', 401);
+    }
+    const uuid = uuidv4();
+    const newRefreshToken = this.jwtService.sign(
+      { username: email },
+      {
+        secret: process.env.JWT_REFRESH_KEY,
+        expiresIn: 2592000,
+      },
+    );
+    await this.redisManager.set(
+      `auth:${email}`,
+      { email: email, uuid: uuid, refresh: newRefreshToken },
+      {
+        ttl: 0,
+      },
+    );
+    return {
+      access_token: this.jwtService.sign(
+        { username: email },
+        {
+          secret: process.env.JWT_SECRET_KEY,
+          expiresIn: 3600,
+        },
+      ),
+      refresh_token: newRefreshToken,
+      uuid: uuid,
+      email: email,
+    };
+  }
 
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.usersRepository.findOne({

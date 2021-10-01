@@ -1,10 +1,11 @@
 import { Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Request, Response } from 'express';
-import { ApiCreatedResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from './feature/user/entities/user.entity';
 
 @Controller('/')
+@ApiTags('Root API')
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
@@ -25,7 +26,7 @@ export class AppController {
 
   @Post('/')
   @ApiOperation({
-    summary: 'csrf 관련 핸들러',
+    summary: 'csrf 테스트용',
     description: '테스트용',
   })
   @ApiCreatedResponse({ description: 'csrf 토큰 테스트용', type: String })
