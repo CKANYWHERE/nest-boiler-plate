@@ -63,7 +63,7 @@ export class AuthController {
   @Version('1')
   @ApiOperation({
     summary: '로그인 API',
-    description: '로그인시 csrf, access_token, refresh_token 을 리턴한다.',
+    description: '로그인시 access_token, refresh_token 을 리턴한다.',
   })
   @UseGuards(LocalAuthGuard)
   @Post('login')

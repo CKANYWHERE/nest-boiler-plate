@@ -8,6 +8,9 @@ import {
   Delete,
   Version,
   UseGuards,
+  Req,
+  Inject,
+  CACHE_MANAGER,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,11 +18,16 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Request } from 'express';
+import { Cache } from 'cache-manager';
 
 @Controller('user')
 @ApiTags('유저 API')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    @Inject(CACHE_MANAGER) private redisManager: Cache,
+  ) {}
 
   @Version('1')
   @ApiOperation({ summary: '유저 생성 API', description: '유저를 생성한다.' })
@@ -37,8 +45,14 @@ export class UserController {
   })
   @UseGuards(JwtAuthGuard)
   @ApiCreatedResponse({ description: '모든 유저를 리턴한다.', type: [User] })
-  async findAll() {
-    return await this.userService.findAll();
+  async findAll(@Req() req: Request) {
+    let userData = await this.redisManager.get(`api:${req.url}`);
+    if (!userData) {
+      userData = await this.userService.findAll();
+      await this.redisManager.set(`api:${req.url}`, userData, { ttl: 86400 });
+      return userData;
+    }
+    return userData;
   }
 
   @Version('1')
@@ -48,8 +62,14 @@ export class UserController {
     description: '한명의 유저를 리턴한다.',
   })
   @ApiCreatedResponse({ description: '유저를 리턴한다.', type: User })
-  async findOne(@Param('id') id: string) {
-    return await this.userService.findOne(id);
+  async findOne(@Req() req: Request, @Param('id') id: string) {
+    let userData = await this.redisManager.get(`api:${req.url}`);
+    if (!userData) {
+      userData = await this.userService.findOne(id);
+      await this.redisManager.set(`api:${req.url}`, userData, { ttl: 86400 });
+      return userData;
+    }
+    return userData;
   }
 
   @Version('1')

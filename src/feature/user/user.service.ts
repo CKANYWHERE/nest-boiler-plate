@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRepo } from './user.repo';
@@ -16,7 +16,11 @@ export class UserService {
   }
 
   async findOne(id: string) {
-    return await this.userRepo.findOne({ id: id });
+    const user = await this.userRepo.findOne({ id: id });
+    if (!user) {
+      throw new HttpException('NO_DATA_FOUND', 404);
+    }
+    return user;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
