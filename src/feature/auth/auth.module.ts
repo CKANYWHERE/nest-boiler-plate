@@ -8,7 +8,7 @@ import { UserRepo } from '../user/user.repo';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import * as redisStore from 'cache-manager-ioredis';
-import { DateModule } from '../../commcon/date/date.module';
+import { DateModule } from '../../common/date/date.module';
 
 @Module({
   imports: [
