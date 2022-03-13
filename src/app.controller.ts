@@ -2,7 +2,7 @@ import { Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Request, Response } from 'express';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { User } from './feature/user/entities/user.entity';
+import { User } from './apis/user/entities/user.entity';
 
 @Controller('/')
 @ApiTags('Root API')

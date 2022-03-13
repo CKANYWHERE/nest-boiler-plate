@@ -12,8 +12,8 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from '../user/dto/login-user.dto';
-import { LocalAuthGuard } from './local-auth.guard';
-import { RefreshAuthGuard } from './refresh-auth.guard';
+import { LocalAuthGuard } from './local-auth/local-auth.guard';
+import { RefreshAuthGuard } from './refresh/refresh-auth.guard';
 import { RefreshDto } from './dto/refresh.dto';
 import { Request, Response } from 'express';
 import { DateService } from '../../common/date/date.service';

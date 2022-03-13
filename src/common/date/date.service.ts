@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '../../feature/user/entities/user.entity';
+import { User } from '../../apis/user/entities/user.entity';
 
 @Injectable()
 export class DateService {

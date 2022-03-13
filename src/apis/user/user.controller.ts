@@ -11,15 +11,18 @@ import {
   Req,
   Inject,
   CACHE_MANAGER,
+  CacheTTL,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 import { Request } from 'express';
 import { Cache } from 'cache-manager';
+import { HttpCacheInterceptor } from '../../interceptor/http-cahce.interceptor';
 
 @Controller('user')
 @ApiTags('유저 API')
@@ -43,16 +46,11 @@ export class UserController {
     summary: '모든 유저 가져오는 API',
     description: '모든 유저를 리턴한다.',
   })
-  @UseGuards(JwtAuthGuard)
   @ApiCreatedResponse({ description: '모든 유저를 리턴한다.', type: [User] })
+  @CacheTTL(86400)
+  @UseInterceptors(HttpCacheInterceptor)
   async findAll(@Req() req: Request) {
-    let userData = await this.redisManager.get(`api:${req.url}`);
-    if (!userData) {
-      userData = await this.userService.findAll();
-      await this.redisManager.set(`api:${req.url}`, userData, { ttl: 86400 });
-      return userData;
-    }
-    return userData;
+    return await this.userService.findAll();
   }
 
   @Version('1')
@@ -62,14 +60,10 @@ export class UserController {
     description: '한명의 유저를 리턴한다.',
   })
   @ApiCreatedResponse({ description: '유저를 리턴한다.', type: User })
+  @CacheTTL(86400)
+  @UseInterceptors(HttpCacheInterceptor)
   async findOne(@Req() req: Request, @Param('id') id: string) {
-    let userData = await this.redisManager.get(`api:${req.url}`);
-    if (!userData) {
-      userData = await this.userService.findOne(id);
-      await this.redisManager.set(`api:${req.url}`, userData, { ttl: 86400 });
-      return userData;
-    }
-    return userData;
+    return await this.userService.findOne(id);
   }
 
   @Version('1')
@@ -79,6 +73,7 @@ export class UserController {
     description: '한명의 유저를 update 한다.',
   })
   @ApiCreatedResponse({ description: '한명의 유저를 update 한다.', type: User })
+  @UseGuards(JwtAuthGuard)
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return await this.userService.update(id, updateUserDto);
   }
@@ -90,6 +85,7 @@ export class UserController {
     description: '한명의 유저를 삭제 한다.',
   })
   @ApiCreatedResponse({ description: '한명의 유저를 삭제 한다.', type: User })
+  @UseGuards(JwtAuthGuard)
   async remove(@Param('id') id: string) {
     return await this.userService.remove(id);
   }
